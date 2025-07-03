@@ -1,3 +1,0 @@
-Module	Section	Sample Name	Source
-FastQC	all_sections	4P2A_R1	/Users/viola/Documents/Flack_group/rnaseq/results/fastqc_trimmed/4P2A_R1.trimmed_fastqc.zip
-FastQC	all_sections	4P2A_R2	/Users/viola/Documents/Flack_group/rnaseq/results/fastqc_trimmed/4P2A_R2.trimmed_fastqc.zip
