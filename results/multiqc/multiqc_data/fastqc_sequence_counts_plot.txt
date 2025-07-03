@@ -1,0 +1,3 @@
+Sample	Unique Reads	Duplicate Reads
+4P2A_R1	8517417.0	20092602.0
+4P2A_R2	9071666.0	19538353.0

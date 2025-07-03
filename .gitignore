@@ -1,0 +1,9 @@
+data/raw/
+data/reference/
+*.fastq.gz
+*.bam
+.snakemake/
+*.log
+*.html
+*.zip
+*.pdf

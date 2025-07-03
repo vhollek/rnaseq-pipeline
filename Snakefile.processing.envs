@@ -1,0 +1,162 @@
+# Snakefile.processing: Mapping + Counting
+
+# Import modules
+import pandas as pd
+import os
+
+# CONFIG: Load config.yaml
+configfile: "config/config.yaml"
+
+# Load sample sheet
+samples = pd.read_csv(config["samples"], sep="\t")
+SAMPLES = samples["sample"].tolist()
+
+# Directories from config
+RAW_DIR = config["raw_dir"]
+TRIMMED_DIR = config["trimmed_dir"]
+STAR_DIR = config["star_dir"]
+COUNTS_DIR = config["counts_dir"]
+
+# Define threads + parameters
+STAR_INDEX = config["star_index"]
+GTF = config["gtf"]
+STRAND = config["strand"]
+
+# RULE: Define workflow
+# define what output needs to be there to be done
+
+rule all:
+    input:
+        "data/reference/star_index/SA",
+        expand(os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam"), sample=SAMPLES),
+        expand(os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam.bai"), sample=SAMPLES),
+        expand(os.path.join(COUNTS_DIR, "{sample}_featureCounts.txt"), sample=SAMPLES),
+        os.path.join(COUNTS_DIR, "counts_combined.tsv")
+
+# RULE: STAR indexing
+# indexes the reference genome (once)
+
+rule star_index:
+  input:
+    fasta = "data/reference/Bos_taurus.ARS-UCD2.0.dna.toplevel.fa",
+    gtf = "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf"
+  output:
+    index_done = "data/reference/star_index/SA"
+  threads: 8
+  conda: "conda_envs/star.yaml"
+  shell:
+    """
+    STAR --runThreadN {threads} \
+         --runMode genomeGenerate \
+         --genomeDir data/reference/star_index/ \
+         --genomeFastaFiles {input.fasta} \
+         --sjdbGTFfile {input.gtf} \
+         --sjdbOverhang 150
+    """
+
+
+# RULE: STAR mapping
+# align the filtered fastq files
+# the fastq files from 1st and 2nd sequencing run are combined here to one BAM
+
+rule star_align:
+    input:
+        R1 = os.path.join(TRIMMED_DIR, "{sample}_R1.trimmed.fastq.gz"),
+        R2 = os.path.join(TRIMMED_DIR, "{sample}_R2.trimmed.fastq.gz")
+    output:
+        bam = os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam")
+    threads: 8
+    params:
+        index = STAR_INDEX,
+        gtf = GTF
+    log:
+        os.path.join(STAR_DIR, "{sample}_STAR.log")
+    conda: "conda_envs/star.yaml"
+    shell:
+        """
+        STAR \
+          --runThreadN {threads} \
+          --genomeDir {params.index} \
+          --readFilesIn {input.R1} {input.R2} \
+          --readFilesCommand zcat \
+          --outFileNamePrefix {STAR_DIR}/{wildcards.sample}_ \
+          --outSAMtype BAM SortedByCoordinate \
+          --sjdbGTFfile {params.gtf} \
+          # --genomeLoad LoadAndKeep \
+          --quantMode GeneCounts \
+          > {log} 2>&1
+        """
+
+# RULE: index BAM file
+# not necessarily needed for featureCounts 
+# good for visualisation in genome browsers for example
+
+rule index_bam:
+    input:
+        bam = "results/star/{sample}.bam"
+    output:
+        bai = "results/star/{sample}.bam.bai"
+    shell:
+        """
+        samtools index {input.bam}
+        """
+
+# RULE: featureCounts
+# quantify the mapped reads based on exons and sums up the reads for each gene
+# featureCounts excludes reads that overlap multiple features 
+# -O option would change this-one read can count for multiple genes
+
+rule featureCounts:
+    input:
+        bam = os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam")
+    output:
+        counts = os.path.join(COUNTS_DIR, "{sample}_featureCounts.txt")
+    threads: 4
+    params:
+        gtf = GTF,
+        strand = STRAND
+    log:
+        os.path.join(COUNTS_DIR, "{sample}_featureCounts.log")
+    conda: "conda_envs/subread.yaml"
+    shell:
+        """
+        featureCounts \
+          -T {threads} \
+          -a {params.gtf} \
+          -o {output.counts} \
+          -p -B -C -s {params.strand} \
+          {input.bam} \
+          > {log} 2>&1
+        """
+
+# RULE: create combined count matrix
+# combine all reads in one count matrix with one column per sample
+
+rule combine_counts:
+    input:
+        expand(os.path.join(COUNTS_DIR, "{sample}_featureCounts.txt"), sample=SAMPLES)
+    output:
+        combined = os.path.join(COUNTS_DIR, "counts_combined.tsv")
+    run:
+        import pandas as pd
+
+        # Load all count files
+        dfs = []
+        for f in input:
+            # Extract sample name from file name
+            sample = os.path.basename(f).replace("_featureCounts.txt", "")
+            # Read counts, skip the comment lines (start with '#')
+            df = pd.read_csv(f, sep="\t", comment='#')
+            # Keep only Geneid and counts column
+            df = df[["Geneid", df.columns[-1]]]
+            # Rename count column to sample name
+            df = df.rename(columns={df.columns[-1]: sample})
+            dfs.append(df)
+
+        # Merge on Geneid
+        combined = dfs[0]
+        for df in dfs[1:]:
+            combined = combined.merge(df, on="Geneid")
+
+        # Save to output file
+        combined.to_csv(output.combined, sep="\t", index=False)

@@ -1,0 +1,32 @@
+# config file
+
+# Path to the sample sheet
+samples: "config/samples.tsv"
+
+# Directory where raw reads live
+raw_dir: "data/raw"
+
+# Directory for trimmed reads
+trimmed_dir: "data/trimmed"
+
+# Directories for QC
+fastqc_dir: "results/fastqc"
+trimmed_fastqc_dir: "results/fastqc_trimmed"
+multiqc_dir: "results/multiqc"
+
+# Directory for output BAM files
+star_dir: "results/star"
+
+# Directory for counts output
+counts_dir: "results/counts"
+
+# Reference genome index directory for STAR
+star_index: "data/reference/star_index"
+
+# Path to GTF annotation file (adjust name to your version)
+gtf: "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf.gz"
+
+# Library strandedness for featureCounts (0 = unstranded, 1 = stranded, 2 = reverse)
+strand: 2 
+# reverse-stranded since R2 in the same direction as the coding sequence
+# depends on the kit used for library preparation
