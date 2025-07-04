@@ -1,5 +1,14 @@
-data/raw/
-data/reference/
+data/raw/*
+!data/raw/.gitkeep
+
+data/reference/*
+!data/reference/.gitkeep
+
+data/trimmed/*
+
+results/*
+!results/.gitkeep
+
 *.fastq.gz
 *.bam
 .snakemake/

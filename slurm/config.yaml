@@ -1,27 +1,28 @@
-# cluster-cancel: "scancel"
-# restart-times: "0"
-# jobscript: "slurm-jobscript.sh"
-# cluster: "slurm-submit.py"
-# cluster-status: "slurm-status.py"
-# max-jobs-per-second: "10"
-# max-status-checks-per-second: "10"
-# local-cores: 1
-# latency-wait: "60"
-# use-conda: "True"
-# use-singularity: "False"
-# jobs: 500
-# printshellcmds: "True"
-
-# config.yaml (in your slurm profile)
 executor: slurm
 jobs: 500
 latency-wait: 60
 use-conda: true
 printshellcmds: true
+jobscript: slurm-jobscript.sh
 
 default-resources:
   - runtime=60
-  - mem_mb=4000
+  - mem_mb=8000
+  - account=hollekv_c
 
 restart-times: 0
+
+set-resources:
+  - star_index:mem_mb=64000
+  - star_index:runtime=120
+  - star_align:mem_mb=64000
+  - star_align:runtime=240
+  - featureCounts:mem_mb=8000
+  - featureCounts:runtime=60
+  - fastqc_raw:mem_mb=2000
+  - fastqc_raw:runtime=20
+  - fastqc_trimmed:mem_mb=2000
+  - fastqc_trimmed:runtime=20
+  - multiqc:mem_mb=2000
+  - multiqc:runtime=20
 

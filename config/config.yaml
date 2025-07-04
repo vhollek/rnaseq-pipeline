@@ -3,6 +3,9 @@
 # Path to the sample sheet
 samples: "config/samples.tsv"
 
+# Where the job should be run
+execution_mode: "local"  # or "cluster"
+
 # Directory where raw reads live
 raw_dir: "data/raw"
 
@@ -24,7 +27,7 @@ counts_dir: "results/counts"
 star_index: "data/reference/star_index"
 
 # Path to GTF annotation file (adjust name to your version)
-gtf: "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf.gz"
+gtf: "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf"
 
 # Library strandedness for featureCounts (0 = unstranded, 1 = stranded, 2 = reverse)
 strand: 2 

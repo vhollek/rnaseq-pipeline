@@ -27,7 +27,7 @@ STRAND = config["strand"]
 
 rule all:
     input:
-        "data/reference/star_index/SA",
+        os.path.join(STAR_INDEX, "SA"),
         expand(os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam"), sample=SAMPLES),
         expand(os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam.bai"), sample=SAMPLES),
         expand(os.path.join(COUNTS_DIR, "{sample}_featureCounts.txt"), sample=SAMPLES),
@@ -41,14 +41,14 @@ rule star_index:
     fasta = "data/reference/Bos_taurus.ARS-UCD2.0.dna.toplevel.fa",
     gtf = "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf"
   output:
-    index_done = "data/reference/star_index/SA"
+    index_done = os.path.join(STAR_INDEX, "SA")
   threads: 8
   conda: "conda_envs/star.yaml"
   shell:
     """
     STAR --runThreadN {threads} \
          --runMode genomeGenerate \
-         --genomeDir data/reference/star_index/ \
+         --genomeDir {STAR_INDEX} \
          --genomeFastaFiles {input.fasta} \
          --sjdbGTFfile {input.gtf} \
          --sjdbOverhang 150
@@ -62,7 +62,8 @@ rule star_index:
 rule star_align:
     input:
         R1 = os.path.join(TRIMMED_DIR, "{sample}_R1.trimmed.fastq.gz"),
-        R2 = os.path.join(TRIMMED_DIR, "{sample}_R2.trimmed.fastq.gz")
+        R2 = os.path.join(TRIMMED_DIR, "{sample}_R2.trimmed.fastq.gz"),
+        index_done = os.path.join(STAR_INDEX, "SA")
     output:
         bam = os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam")
     threads: 8
@@ -76,13 +77,12 @@ rule star_align:
         """
         STAR \
           --runThreadN {threads} \
-          --genomeDir {params.index} \
+          --genomeDir {STAR_INDEX} \
           --readFilesIn {input.R1} {input.R2} \
           --readFilesCommand zcat \
           --outFileNamePrefix {STAR_DIR}/{wildcards.sample}_ \
           --outSAMtype BAM SortedByCoordinate \
           --sjdbGTFfile {params.gtf} \
-          # --genomeLoad LoadAndKeep \
           --quantMode GeneCounts \
           > {log} 2>&1
         """
@@ -93,9 +93,9 @@ rule star_align:
 
 rule index_bam:
     input:
-        bam = "results/star/{sample}.bam"
+        bam = os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam")
     output:
-        bai = "results/star/{sample}.bam.bai"
+        bai = os.path.join(STAR_DIR, "{sample}_Aligned.sortedByCoord.out.bam.bai")
     shell:
         """
         samtools index {input.bam}

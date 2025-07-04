@@ -1,7 +1,9 @@
 name: multiqc
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
 dependencies:
-  - multiqc
-
+  - python=3.10
+  - pip
+  - pip:
+      - multiqc

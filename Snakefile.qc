@@ -81,7 +81,6 @@ rule fastqc_trimmed:
     output:
         html = TRIMMED_FASTQC_DIR + "/{sample}_{read}.trimmed_fastqc.html",
         zip = TRIMMED_FASTQC_DIR + "/{sample}_{read}.trimmed_fastqc.zip"
-    conda: "conda_envs/fastqc.yaml"
     shell:
         """
         fastqc {input.fq} --outdir {TRIMMED_FASTQC_DIR}
