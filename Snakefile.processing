@@ -22,9 +22,6 @@ STAR_INDEX = config["star_index"]
 GTF = config["gtf"]
 STRAND = config["strand"]
 
-# Paramter for --genomeDir if run locally or on cluster
-EXEC_MODE = config["execution_mode"]
-
 # RULE: Define workflow
 # define what output needs to be there to be done
 
@@ -83,7 +80,7 @@ rule star_align:
           --runThreadN {threads} \
           --genomeDir {params.index} \
           --readFilesIn {input.R1} {input.R2} \
-          --readFilesCommand zcat \
+          --readFilesCommand gunzip -c \ # zcat \
           --outFileNamePrefix {STAR_DIR}/{wildcards.sample}_ \
           --outSAMtype BAM SortedByCoordinate \
           --sjdbGTFfile {params.gtf} \
