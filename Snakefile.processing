@@ -25,14 +25,6 @@ STRAND = config["strand"]
 # Paramter for --genomeDir if run locally or on cluster
 EXEC_MODE = config["execution_mode"]
 
-# Pick genomeLoad option
-if EXEC_MODE == "local":
-    GENOME_LOAD = "LoadAndKeep"
-elif EXEC_MODE == "cluster":
-    GENOME_LOAD = "NoSharedMemory"
-else:
-    GENOME_LOAD = "NoSharedMemory"
-
 # RULE: Define workflow
 # define what output needs to be there to be done
 
@@ -84,6 +76,9 @@ rule star_align:
         os.path.join(STAR_DIR, "{sample}_STAR.log")
     shell:
         """
+        echo "PWD: $(pwd)"
+        echo "Files: {input.R1} {input.R2}"
+        ls -lh {input.R1}
         STAR \
           --runThreadN {threads} \
           --genomeDir {params.index} \
@@ -92,7 +87,6 @@ rule star_align:
           --outFileNamePrefix {STAR_DIR}/{wildcards.sample}_ \
           --outSAMtype BAM SortedByCoordinate \
           --sjdbGTFfile {params.gtf} \
-          --genomeLoad {GENOME_LOAD} \
           --quantMode GeneCounts \
           > {log} 2>&1
         """

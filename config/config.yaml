@@ -3,9 +3,6 @@
 # Path to the sample sheet
 samples: "config/samples.tsv"
 
-# Where the job should be run
-execution_mode: "local"  # or "cluster"
-
 # Directory where raw reads live
 raw_dir: "data/raw"
 
