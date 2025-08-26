@@ -1,0 +1,3 @@
+# RNA-seq processing pipeline for Flack group
+This is the GitHub repository for the RNA-Sequencing processing pipeline.
+The tutorial can be found here: https://eur03.safelinks.protection.outlook.com/?url=https%3A%2F%2Fempty-hubcap-fcd.notion.site%2FRNA-Seq-pre-processing-pipeline-22333f028f2c801ab82ac3e01319fa87&data=05%7C02%7CJ.E.Flack%40tudelft.nl%7Cb7494d3df5d6412c0f2408ddbded1442%7C096e524d692940308cd38ab42de0887b%7C0%7C0%7C638875548120105552%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Z4ApO0J7angxMiNdTsbB9hWMoy39wto6KHjZs9YQp5w%3D&reserved=0.
