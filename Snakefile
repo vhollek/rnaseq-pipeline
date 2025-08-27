@@ -21,6 +21,7 @@ COUNTS_DIR = config["counts_dir"]
 # Define threads + parameters
 STAR_INDEX = config["star_index"]
 GTF = config["gtf"]
+FASTA = config["fasta"]
 STRAND = config["strand"]
 
 
@@ -109,8 +110,8 @@ rule multiqc:
 
 rule star_index:
   input:
-    fasta = "data/reference/Bos_taurus.ARS-UCD2.0.dna.toplevel.fa",
-    gtf = "data/reference/Bos_taurus.ARS-UCD2.0.114.gtf"
+    fasta = FASTA,
+    gtf = GTF
   output:
     star_index = os.path.join(STAR_INDEX, "SA")
   threads: 8
