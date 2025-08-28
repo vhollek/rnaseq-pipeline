@@ -151,7 +151,8 @@ rule star_align:
         STAR \
           --runThreadN {threads} \
           --genomeDir {params.index} \
-          --readFilesIn <(gunzip -c {input.R1}) <(gunzip -c {input.R2}) \
+          --readFilesIn {input.R1} {input.R2} \
+          --readFilesCommand gunzip -c \
           --outFileNamePrefix {STAR_DIR}/{wildcards.sample}_ \
           --outSAMtype BAM SortedByCoordinate \
           --sjdbGTFfile {params.gtf} \
