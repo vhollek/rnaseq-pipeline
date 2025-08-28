@@ -56,6 +56,8 @@ rule fastqc_raw:
         """
         fastqc {input.fq} --outdir {FASTQC_DIR}
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: Trim adapters with fastp
 
@@ -77,6 +79,8 @@ rule trim_reads:
           -h {output.html} -j {output.json} \
           -w {threads}
         """
+    conda:
+        "rnaseq_env.yaml"
 
 
 # RULE: FastQC on trimmed reads
@@ -91,6 +95,8 @@ rule fastqc_trimmed:
         """
         fastqc {input.fq} --outdir {TRIMMED_FASTQC_DIR}
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: MultiQC summary
 
@@ -104,26 +110,31 @@ rule multiqc:
         """
         multiqc results/ -o {MULTIQC_DIR}
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: STAR indexing
 # indexes the reference genome (once)
 
 rule star_index:
-  input:
-    fasta = FASTA,
-    gtf = GTF
-  output:
-    star_index = os.path.join(STAR_INDEX, "SA")
-  threads: 8
-  shell:
-    """
-    STAR --runThreadN {threads} \
-         --runMode genomeGenerate \
-         --genomeDir {STAR_INDEX} \
-         --genomeFastaFiles {input.fasta} \
-         --sjdbGTFfile {input.gtf} \
-         --sjdbOverhang 150
-    """
+    input:
+        fasta = FASTA,
+        gtf = GTF
+    output:
+        star_index = os.path.join(STAR_INDEX, "SA")
+    threads: 8
+    shell:
+        """
+        STAR --runThreadN {threads} \
+            --runMode genomeGenerate \
+            --genomeDir {STAR_INDEX} \
+            --genomeFastaFiles {input.fasta} \
+            --sjdbGTFfile {input.gtf} \
+            --sjdbOverhang 150
+        """
+    conda:
+        "rnaseq_env.yaml"
+
 
 
 # RULE: STAR mapping
@@ -159,6 +170,8 @@ rule star_align:
           --quantMode GeneCounts \
           > {log} 2>&1
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: index BAM file
 # not necessarily needed for featureCounts 
@@ -173,6 +186,8 @@ rule index_bam:
         """
         samtools index {input.bam}
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: featureCounts
 # quantify the mapped reads based on exons and sums up the reads for each gene
@@ -200,6 +215,8 @@ rule featureCounts:
           {input.bam} \
           > {log} 2>&1
         """
+    conda:
+        "rnaseq_env.yaml"
 
 # RULE: create combined count matrix
 # combine all reads in one count matrix with one column per sample
@@ -209,6 +226,8 @@ rule combine_counts:
         expand(os.path.join(COUNTS_DIR, "{sample}_featureCounts.txt"), sample=SAMPLES)
     output:
         combined = os.path.join(COUNTS_DIR, "counts_combined.tsv")
+    conda:
+        "rnaseq_env.yaml"
     run:
         import pandas as pd
 
@@ -232,3 +251,4 @@ rule combine_counts:
 
         # Save to output file
         combined.to_csv(output.combined, sep="\t", index=False)
+    
